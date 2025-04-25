@@ -342,4 +342,61 @@ form {
   color: #999;
   font-size: 14px;
   pointer-events: none; /* 防止干扰输入 */
-} 
+}
+
+/* NAC输入框容器 */
+.nac-inputs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.nac-input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.nac-input-group .input-wrapper {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.nac-buttons {
+  display: flex;
+  margin-left: 10px;
+}
+
+.nac-add-button,
+.nac-remove-button {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 5px;
+  border: none;
+}
+
+.nac-add-button {
+  background-color: #52c41a;
+  color: white;
+}
+
+.nac-remove-button {
+  background-color: #f5222d;
+  color: white;
+}
+
+.nac-add-button:hover {
+  background-color: #73d13d;
+}
+
+.nac-remove-button:hover {
+  background-color: #ff4d4f;
+}

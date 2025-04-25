@@ -8,7 +8,7 @@ interface ModalInstructionsProps {
 
 const ModalInstructions: React.FC<ModalInstructionsProps> = ({ isOpen, title }) => {
   const [isVisible, setIsVisible] = useState(true);
-  
+
   // 每当弹窗打开时，重置可见状态
   useEffect(() => {
     if (isOpen) {
@@ -23,7 +23,8 @@ const ModalInstructions: React.FC<ModalInstructionsProps> = ({ isOpen, title }) 
       <div className="modal-instructions-content">
         <div className="modal-instructions-header">
           <h3 className="modal-instructions-title">{title}</h3>
-          <button 
+          <button
+            type="button"
             className="modal-instructions-close"
             onClick={() => setIsVisible(false)}
             title="关闭说明"
@@ -45,7 +46,7 @@ const ModalInstructions: React.FC<ModalInstructionsProps> = ({ isOpen, title }) 
             <strong>约价性质</strong>：必填。单选，枚举值就是原型里这些
           </li>
           <li>
-            <strong>是否NAC</strong>：默认为【请选择】的无值状态，但是如果用户选择了是，则增加一个必填项，字段名为 NAC，属性为文本框，暂时不加限制，随便输内容
+            <strong>是否NAC</strong>：默认为【请选择】的无值状态，但是如果用户选择了是，则增加一个必填项，字段名为 NAC，属性为文本框，暂时不加限制，随便输内容。NAC可以添加多个，最多添加99个，页面交互样式参考原型，一直向下延伸，弹窗添加上下拖动的的进度条。校验规则是当NAC为是的时候，至少需要填写一个NAC
           </li>
           <li>
             <strong>适用品名</strong>：默认是 请选择 的无值状态，枚举值就是原型中下拉这些，但是如果用户选择了其他，那么要增加一个必填字段，字段名为品名，placeholder占位字符为：请输入品名或HS Code，暂时不加限制，随便输
@@ -71,4 +72,4 @@ const ModalInstructions: React.FC<ModalInstructionsProps> = ({ isOpen, title }) 
   );
 };
 
-export default ModalInstructions; 
+export default ModalInstructions;

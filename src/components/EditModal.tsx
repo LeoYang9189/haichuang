@@ -8,7 +8,7 @@ interface Appointment {
   shippingCompany: string;
   priceNature: string;
   isNAC: boolean | null;
-  nac: string;
+  nac: string[]; // 改为字符串数组，支持多个NAC值
   applicableProducts: string | null;
   customProduct: string;
   mqc: string;
@@ -48,7 +48,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
     shippingCompany: '',
     priceNature: '自有约价',
     isNAC: null,
-    nac: '',
+    nac: [''], // 初始化为包含一个空字符串的数组
     applicableProducts: null,
     customProduct: '',
     mqc: '',
@@ -69,7 +69,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
     { id: 6, nameCn: '非洲', nameEn: 'Africa', selected: false },
     { id: 7, nameCn: '南美洲', nameEn: 'South America', selected: false }
   ]);
-  
+
   // 船公司选项
   const [shippingCompanies] = useState<ShippingCompany[]>([
     { id: 1, code: 'MSK', name: '马士基' },
@@ -83,14 +83,14 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
     { id: 9, code: 'ZIM', name: '以星航运' },
     { id: 10, code: 'OOCL', name: '东方海外' }
   ]);
-  
+
   // 分离搜索输入和显示值
   const [searchInput, setSearchInput] = useState('');
   const [selectedDisplay, setSelectedDisplay] = useState('');
   const [showLineDropdown, setShowLineDropdown] = useState(false);
   const [filteredLines, setFilteredLines] = useState(shippingLines);
   const lineDropdownRef = useRef<HTMLDivElement>(null);
-  
+
   // 船公司下拉框状态
   const [companySearchInput, setCompanySearchInput] = useState('');
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
@@ -101,7 +101,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
   useEffect(() => {
     if (appointment) {
       setForm({ ...appointment });
-      
+
       // 根据选中的航线更新shippingLines的状态
       if (appointment.line) {
         const selectedLines = appointment.line.split(',');
@@ -110,15 +110,15 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
           selected: selectedLines.includes(line.nameCn)
         }));
         setShippingLines(updatedLines);
-        
+
         // 更新显示值
         setSelectedDisplay(selectedLines.join(', '));
       }
-      
+
       // 设置船公司显示值
       if (appointment.shippingCompany) {
-        const company = shippingCompanies.find(c => 
-          c.code === appointment.shippingCompany || 
+        const company = shippingCompanies.find(c =>
+          c.code === appointment.shippingCompany ||
           c.name === appointment.shippingCompany
         );
         if (company) {
@@ -135,7 +135,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
         shippingCompany: '',
         priceNature: '自有约价',
         isNAC: null,
-        nac: '',
+        nac: [''], // 初始化为包含一个空字符串的数组
         applicableProducts: null,
         customProduct: '',
         mqc: '',
@@ -145,7 +145,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
         validFrom: '',
         validTo: ''
       });
-      
+
       // 重置航线选择状态
       setShippingLines(prev => prev.map(line => ({ ...line, selected: false })));
       setSelectedDisplay('');
@@ -163,7 +163,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
         // 关闭下拉框时清空搜索词，恢复显示选中项
         setSearchInput('');
       }
-      
+
       if (companyDropdownRef.current && !companyDropdownRef.current.contains(event.target as Node)) {
         setShowCompanyDropdown(false);
         // 关闭下拉框时清空搜索词
@@ -181,8 +181,8 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
   useEffect(() => {
     if (showLineDropdown) {
       const filtered = shippingLines.filter(
-        line => 
-          line.nameCn.toLowerCase().includes(searchInput.toLowerCase()) || 
+        line =>
+          line.nameCn.toLowerCase().includes(searchInput.toLowerCase()) ||
           line.nameEn.toLowerCase().includes(searchInput.toLowerCase())
       );
       setFilteredLines(filtered);
@@ -191,13 +191,13 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
       setFilteredLines(shippingLines);
     }
   }, [searchInput, shippingLines, showLineDropdown]);
-  
+
   // 根据搜索词过滤船公司
   useEffect(() => {
     if (showCompanyDropdown) {
       const filtered = shippingCompanies.filter(
-        company => 
-          company.code.toLowerCase().includes(companySearchInput.toLowerCase()) || 
+        company =>
+          company.code.toLowerCase().includes(companySearchInput.toLowerCase()) ||
           company.name.toLowerCase().includes(companySearchInput.toLowerCase())
       );
       setFilteredCompanies(filtered);
@@ -266,7 +266,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
       [name]: ''
     });
   };
-  
+
   // 清空航线选择
   const handleClearLines = () => {
     // 清空所有航线选择
@@ -282,7 +282,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
     setSelectedDisplay('');
     setSearchInput('');
   };
-  
+
   // 清空船公司选择
   const handleClearCompany = () => {
     setForm({
@@ -298,7 +298,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
     setForm({
       ...form,
       isNAC: null,
-      nac: ''
+      nac: [''] // 重置为包含一个空字符串的数组
     });
   };
 
@@ -331,55 +331,106 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
     setShowLineDropdown(true);
     // 已经选择了航线，但是仍然要保持文本框内容为选择的内容，不清空搜索词
   };
-  
+
   const handleCompanyInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCompanySearchInput(e.target.value);
     setShowCompanyDropdown(true);
   };
-  
+
   const handleCompanyInputFocus = () => {
     setShowCompanyDropdown(true);
   };
 
+  // 处理NAC输入变化
+  const handleNacChange = (index: number, value: string) => {
+    const updatedNac = [...form.nac];
+    updatedNac[index] = value;
+    setForm({
+      ...form,
+      nac: updatedNac
+    });
+  };
+
+  // 添加新的NAC输入框
+  const handleAddNac = () => {
+    // 最多允许添加99个NAC
+    if (form.nac.length < 99) {
+      setForm({
+        ...form,
+        nac: [...form.nac, '']
+      });
+    }
+  };
+
+  // 删除NAC输入框
+  const handleRemoveNac = (index: number) => {
+    // 至少保留一个NAC输入框
+    if (form.nac.length > 1) {
+      const updatedNac = form.nac.filter((_, i) => i !== index);
+      setForm({
+        ...form,
+        nac: updatedNac
+      });
+    }
+  };
+
   const handleShippingLineClick = (id: number) => {
     // 更新航线选择状态
-    const updatedLines = shippingLines.map(line => 
+    const updatedLines = shippingLines.map(line =>
       line.id === id ? { ...line, selected: !line.selected } : line
     );
     setShippingLines(updatedLines);
-    
+
     // 更新form中的line字段和显示值
     const selectedLines = updatedLines.filter(line => line.selected);
     const selectedLinesText = selectedLines.map(line => line.nameCn).join(',');
     const displayText = selectedLines.map(line => line.nameCn).join(', ');
-    
+
     setForm({
       ...form,
       line: selectedLinesText
     });
     setSelectedDisplay(displayText);
-    
+
     // 不要在选择后关闭下拉框，保持打开状态以便多选
     // 下拉框会在点击外部区域时关闭
   };
-  
+
   const handleCompanyClick = (company: ShippingCompany) => {
     // 更新form中的船公司字段
     setForm({
       ...form,
       shippingCompany: company.code
     });
-    
+
     // 更新显示值
     setSelectedCompanyDisplay(`${company.code} | ${company.name}`);
-    
+
     // 单选，选择后关闭下拉框
     setShowCompanyDropdown(false);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(form);
+
+    // 验证：如果选择了NAC，至少需要填写一个NAC值
+    if (form.isNAC === true) {
+      const hasValidNac = form.nac.some(nac => nac.trim() !== '');
+      if (!hasValidNac) {
+        alert('请至少填写一个NAC值');
+        return;
+      }
+
+      // 过滤掉空的NAC值
+      const filteredNac = form.nac.filter(nac => nac.trim() !== '');
+      onSave({
+        ...form,
+        nac: filteredNac.length > 0 ? filteredNac : [''] // 确保至少有一个值
+      });
+    } else {
+      onSave(form);
+    }
+
     onClose();
   };
 
@@ -390,7 +441,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
       <div className="modal-container">
         <div className="modal-header">
           <h2>{isAdd ? '新增约号' : '编辑约号'}</h2>
-          <button className="close-button" onClick={onClose}>×</button>
+          <button type="button" className="close-button" onClick={onClose} title="关闭">×</button>
         </div>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -401,12 +452,14 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                 name="id"
                 value={form.id}
                 onChange={handleChange}
+                placeholder="请输入船公司约号"
+                title="船公司约号"
                 required
               />
               {form.id && (
-                <button 
-                  type="button" 
-                  className="clear-button" 
+                <button
+                  type="button"
+                  className="clear-button"
                   onClick={() => handleClearInput('id')}
                 >
                   ×
@@ -414,7 +467,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               )}
             </div>
           </div>
-          
+
           <div className="form-group full-width">
             <label>适用航线:</label>
             <div className="shipping-line-selector" ref={lineDropdownRef}>
@@ -429,9 +482,9 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                   onClick={() => setShowLineDropdown(true)}
                 />
                 {selectedDisplay && (
-                  <button 
-                    type="button" 
-                    className="clear-button" 
+                  <button
+                    type="button"
+                    className="clear-button"
                     onClick={handleClearLines}
                   >
                     ×
@@ -453,8 +506,8 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                     </div>
                   </div>
                   {filteredLines.map(line => (
-                    <div 
-                      key={line.id} 
+                    <div
+                      key={line.id}
                       className={`shipping-line-item ${line.selected ? 'selected' : ''}`}
                       onClick={() => handleShippingLineClick(line.id)}
                     >
@@ -466,7 +519,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               )}
             </div>
           </div>
-          
+
           <div className="form-group">
             <label>船公司:</label>
             <div className="shipping-company-selector" ref={companyDropdownRef}>
@@ -481,9 +534,9 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                   onClick={() => setShowCompanyDropdown(true)}
                 />
                 {selectedCompanyDisplay && (
-                  <button 
-                    type="button" 
-                    className="clear-button" 
+                  <button
+                    type="button"
+                    className="clear-button"
                     onClick={handleClearCompany}
                   >
                     ×
@@ -505,8 +558,8 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                     </div>
                   </div>
                   {filteredCompanies.map(company => (
-                    <div 
-                      key={company.id} 
+                    <div
+                      key={company.id}
                       className={`shipping-company-item ${form.shippingCompany === company.code ? 'selected' : ''}`}
                       onClick={() => handleCompanyClick(company)}
                     >
@@ -518,13 +571,14 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               )}
             </div>
           </div>
-          
+
           <div className="form-group">
             <label className="required">约价性质:</label>
             <select
               name="priceNature"
               value={form.priceNature}
               onChange={handleChange}
+              title="约价性质"
               required
             >
               <option value="自有约价">自有约价</option>
@@ -536,7 +590,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               <option value="AFG约价">AFG约价</option>
             </select>
           </div>
-          
+
           <div className="form-group">
             <label>是否NAC:</label>
             <div className="input-wrapper">
@@ -544,15 +598,16 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                 name="isNAC"
                 value={form.isNAC === null ? '' : form.isNAC ? '是' : '否'}
                 onChange={handleChange}
+                title="是否NAC"
               >
                 <option value="">请选择</option>
                 <option value="是">是</option>
                 <option value="否">否</option>
               </select>
               {form.isNAC !== null && (
-                <button 
-                  type="button" 
-                  className="clear-button" 
+                <button
+                  type="button"
+                  className="clear-button"
                   onClick={handleClearNAC}
                 >
                   ×
@@ -560,31 +615,50 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               )}
             </div>
           </div>
-          
+
           {form.isNAC === true && (
-            <div className="form-group">
+            <div className="form-group full-width">
               <label className="required">NAC:</label>
-              <div className="input-wrapper">
-                <input
-                  type="text"
-                  name="nac"
-                  value={form.nac}
-                  onChange={handleChange}
-                  required
-                />
-                {form.nac && (
-                  <button 
-                    type="button" 
-                    className="clear-button" 
-                    onClick={() => handleClearInput('nac')}
-                  >
-                    ×
-                  </button>
-                )}
+              <div className="nac-inputs-container">
+                {form.nac.map((nacValue, index) => (
+                  <div key={index} className="nac-input-group">
+                    <div className="input-wrapper">
+                      <input
+                        type="text"
+                        placeholder={`请输入NAC ${index + 1}`}
+                        value={nacValue}
+                        onChange={(e) => handleNacChange(index, e.target.value)}
+                        required={index === 0} // 至少第一个NAC是必填的
+                      />
+                      <div className="nac-buttons">
+                        {index === form.nac.length - 1 && form.nac.length < 99 && (
+                          <button
+                            type="button"
+                            className="nac-add-button"
+                            onClick={handleAddNac}
+                            title="添加NAC"
+                          >
+                            +
+                          </button>
+                        )}
+                        {form.nac.length > 1 && (
+                          <button
+                            type="button"
+                            className="nac-remove-button"
+                            onClick={() => handleRemoveNac(index)}
+                            title="删除NAC"
+                          >
+                            -
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
-          
+
           <div className="form-group">
             <label>适用品名:</label>
             <div className="input-wrapper">
@@ -592,6 +666,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                 name="applicableProducts"
                 value={form.applicableProducts || ''}
                 onChange={handleChange}
+                title="适用品名"
               >
                 <option value="">请选择</option>
                 <option value="FAK">FAK</option>
@@ -603,9 +678,9 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                 <option value="其他">其他</option>
               </select>
               {form.applicableProducts && (
-                <button 
-                  type="button" 
-                  className="clear-button" 
+                <button
+                  type="button"
+                  className="clear-button"
                   onClick={handleClearProduct}
                 >
                   ×
@@ -613,7 +688,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               )}
             </div>
           </div>
-          
+
           {form.applicableProducts === '其他' && (
             <div className="form-group">
               <label className="required">品名:</label>
@@ -627,9 +702,9 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                   required
                 />
                 {form.customProduct && (
-                  <button 
-                    type="button" 
-                    className="clear-button" 
+                  <button
+                    type="button"
+                    className="clear-button"
                     onClick={() => handleClearInput('customProduct')}
                   >
                     ×
@@ -638,7 +713,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               </div>
             </div>
           )}
-          
+
           <div className="form-group">
             <label>MQC:</label>
             <div className="unit-input-wrapper">
@@ -652,9 +727,9 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               />
               <span className="input-unit">TEU</span>
               {form.mqc && (
-                <button 
-                  type="button" 
-                  className="clear-button" 
+                <button
+                  type="button"
+                  className="clear-button"
                   onClick={() => handleClearInput('mqc')}
                 >
                   ×
@@ -662,7 +737,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               )}
             </div>
           </div>
-          
+
           <div className="form-group">
             <label>舱保:</label>
             <div className="input-wrapper">
@@ -670,15 +745,16 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                 name="cabinProtection"
                 value={form.cabinProtection || ''}
                 onChange={handleChange}
+                title="舱保"
               >
                 <option value="">请选择</option>
                 <option value="有">有</option>
                 <option value="无">无</option>
               </select>
               {form.cabinProtection !== null && (
-                <button 
-                  type="button" 
-                  className="clear-button" 
+                <button
+                  type="button"
+                  className="clear-button"
                   onClick={handleClearCabinProtection}
                 >
                   ×
@@ -686,7 +762,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               )}
             </div>
           </div>
-          
+
           {form.cabinProtection === '有' && (
             <>
               <div className="form-group">
@@ -702,9 +778,9 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                     required
                   />
                   {form.cabinProtectionValue && (
-                    <button 
-                      type="button" 
-                      className="clear-button" 
+                    <button
+                      type="button"
+                      className="clear-button"
                       onClick={() => handleClearInput('cabinProtectionValue')}
                     >
                       ×
@@ -712,7 +788,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                   )}
                 </div>
               </div>
-              
+
               <div className="form-group">
                 <label className="required">舱保单位:</label>
                 <div className="input-wrapper">
@@ -720,6 +796,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                     name="cabinProtectionUnit"
                     value={form.cabinProtectionUnit}
                     onChange={handleChange}
+                    title="舱保单位"
                     required
                   >
                     <option value="">请选择</option>
@@ -730,9 +807,9 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                     <option value="TEU/年">TEU/年</option>
                   </select>
                   {form.cabinProtectionUnit && form.cabinProtectionUnit !== 'TEU/水' && (
-                    <button 
-                      type="button" 
-                      className="clear-button" 
+                    <button
+                      type="button"
+                      className="clear-button"
                       onClick={() => setForm({...form, cabinProtectionUnit: 'TEU/水'})}
                     >
                       ×
@@ -742,7 +819,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               </div>
             </>
           )}
-          
+
           <div className="form-group">
             <label>有效期开始:</label>
             <div className="input-wrapper">
@@ -751,11 +828,13 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                 name="validFrom"
                 value={form.validFrom}
                 onChange={handleChange}
+                title="有效期开始"
+                placeholder="请选择开始日期"
               />
               {form.validFrom && (
-                <button 
-                  type="button" 
-                  className="clear-button" 
+                <button
+                  type="button"
+                  className="clear-button"
                   onClick={() => handleClearInput('validFrom')}
                 >
                   ×
@@ -763,7 +842,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               )}
             </div>
           </div>
-          
+
           <div className="form-group">
             <label>有效期结束:</label>
             <div className="input-wrapper">
@@ -773,11 +852,13 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                 value={form.validTo}
                 onChange={handleChange}
                 min={form.validFrom}
+                title="有效期结束"
+                placeholder="请选择结束日期"
               />
               {form.validTo && (
-                <button 
-                  type="button" 
-                  className="clear-button" 
+                <button
+                  type="button"
+                  className="clear-button"
                   onClick={() => handleClearInput('validTo')}
                 >
                   ×
@@ -785,7 +866,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
               )}
             </div>
           </div>
-          
+
           <div className="form-group">
             <label>是否启用:</label>
             <div className="input-wrapper">
@@ -793,20 +874,21 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
                 name="isActivated"
                 value={form.isActivated ? '是' : '否'}
                 onChange={handleChange}
+                title="是否启用"
               >
                 <option value="是">是</option>
                 <option value="否">否</option>
               </select>
-              <button 
-                type="button" 
-                className="clear-button" 
+              <button
+                type="button"
+                className="clear-button"
                 onClick={() => setForm({...form, isActivated: true})}
               >
                 ×
               </button>
             </div>
           </div>
-          
+
           <div className="form-actions">
             <button type="button" className="cancel-button" onClick={onClose}>取消</button>
             <button type="submit" className="save-button">保存</button>
@@ -817,4 +899,4 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, appointment, onS
   );
 };
 
-export default EditModal; 
+export default EditModal;
