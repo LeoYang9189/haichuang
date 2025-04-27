@@ -79,10 +79,11 @@
 
 .appointment-table {
   width: 100%;
-  overflow-x: auto;
   margin-bottom: 20px;
   border: 1px solid #e8e8e8;
   border-radius: 4px;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 表格头部操作区域样式 */
@@ -92,6 +93,13 @@
   padding: 8px;
   background-color: #f9f9f9;
   border-bottom: 1px solid #ddd;
+  width: 100%;
+}
+
+/* 表格内容区域样式 */
+.table-content-wrapper {
+  overflow-x: auto;
+  width: 100%;
 }
 
 .column-settings-button {
@@ -124,6 +132,7 @@
   border-collapse: collapse;
   table-layout: fixed; /* 使用固定布局计算列宽 */
   border: none;
+  min-width: 1500px; /* 确保表格有最小宽度，触发滚动条 */
 }
 
 .appointment-table th,
@@ -146,46 +155,58 @@
 
 /* 列宽度样式 */
 .appointment-table .col-id {
-  width: 150px;
+  width: 120px;
 }
 
-.appointment-table .col-line {
+.appointment-table .col-inquirySource {
+  width: 100px;
+}
+
+.appointment-table .col-inquiryPerson {
+  width: 100px;
+}
+
+.appointment-table .col-headFreightStatus,
+.appointment-table .col-mainFreightStatus,
+.appointment-table .col-tailFreightStatus {
   width: 120px;
+}
+
+.appointment-table .col-containerInfo {
+  width: 140px;
+}
+
+.appointment-table .col-cargoReadyTime {
+  width: 120px;
+}
+
+.appointment-table .col-cargoNature {
+  width: 100px;
 }
 
 .appointment-table .col-shippingCompany {
   width: 140px;
 }
 
-.appointment-table .col-priceNature {
-  width: 120px;
-}
-
-.appointment-table .col-isNAC,
-.appointment-table .col-isActivated {
-  width: 80px;
-  min-width: 80px;
-}
-
-.appointment-table .col-nac {
+.appointment-table .col-routeType {
   width: 100px;
 }
 
-.appointment-table .col-applicableProducts {
-  width: 140px;
+.appointment-table .col-loadingPort,
+.appointment-table .col-dischargePort {
+  width: 160px;
 }
 
-.appointment-table .col-mqc {
-  width: 80px;
-  min-width: 80px;
-}
-
-.appointment-table .col-cabinProtection {
+.appointment-table .col-cargoName {
   width: 120px;
 }
 
-.appointment-table .col-validPeriod {
+.appointment-table .col-remarks {
   width: 180px;
+}
+
+.appointment-table .col-createTime {
+  width: 150px;
 }
 
 .appointment-table thead {
@@ -244,7 +265,7 @@ tbody tr:nth-child(even) {
   padding: 10px 15px;
   background-color: #f5f5f5;
   border-top: 1px solid #e0e0e0;
-  margin-top: 10px;
+  width: 100%;
 }
 
 .pagination {
@@ -299,6 +320,12 @@ tbody tr:nth-child(even) {
   border-radius: 4px;
   margin: 0 5px;
   text-align: center;
+}
+
+.pagination-goto {
+  margin-left: 10px;
+  display: flex;
+  align-items: center;
 }
 
 .pagination-go {
@@ -367,4 +394,20 @@ tbody tr:nth-child(even) {
   white-space: nowrap;
   position: relative;
   cursor: default;
+}
+
+/* 状态颜色样式 */
+.status-pending {
+  color: #ff9800;
+  font-weight: 500;
+}
+
+.status-quoted {
+  color: #4caf50;
+  font-weight: 500;
+}
+
+.status-rejected {
+  color: #f44336;
+  font-weight: 500;
 }

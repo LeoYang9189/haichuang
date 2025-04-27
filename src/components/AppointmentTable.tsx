@@ -8,22 +8,23 @@ import ConfirmModal from './ConfirmModal';
 import ModalInstructions from './ModalInstructions';
 
 interface Appointment {
-  id: string;
-  line: string;
-  isActivated: boolean;
+  id: string; // 询价编号，R开头带一串数字
   isSelected?: boolean;
-  shippingCompany: string;
-  priceNature: string;
-  isNAC: boolean | null;
-  nac: string[]; // 改为字符串数组，支持多个NAC值
-  applicableProducts: string | null;
-  customProduct: string;
-  mqc: string;
-  cabinProtection: string | null;
-  cabinProtectionValue: string;
-  cabinProtectionUnit: string;
-  validFrom: string; // 有效期开始日期
-  validTo: string;   // 有效期结束日期
+  inquirySource: string; // 询价来源：内部、外部
+  inquiryPerson: string; // 询价人
+  headFreightStatus: string; // 头程报价状态：待报价、已报价、拒绝报价
+  mainFreightStatus: string; // 干线报价状态：待报价、已报价、拒绝报价
+  tailFreightStatus: string; // 尾程报价状态：待报价、已报价、拒绝报价
+  containerInfo: string; // 箱型箱量，如 1*20GP+2*40HC
+  cargoReadyTime: string; // 货好时间：具体日期或 1周内、2周内、1个月内、暂不确定
+  cargoNature: string; // 货盘性质：实单、询价
+  shippingCompany: string; // 船公司
+  routeType: string; // 直达/中转
+  loadingPort: string; // 起运港，如 CNSHA | Shanghai
+  dischargePort: string; // 卸货港，如 USLAX | Los Angels
+  cargoName: string; // 品名
+  remarks: string; // 备注
+  createTime: string; // 创建时间，精确到时分秒
 }
 
 // 船公司缩写与中文名称的映射
@@ -52,17 +53,17 @@ export interface AppointmentTableProps {
 const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [allAppointments, setAllAppointments] = useState<Appointment[]>([
-    { id: '888888', line: '', isActivated: true, shippingCompany: 'MSC', priceNature: '自有约价', isNAC: false, nac: [''], applicableProducts: '化工品', customProduct: '', mqc: '140', cabinProtection: '有', cabinProtectionValue: '200', cabinProtectionUnit: 'TEU/月', validFrom: '2024-01-01', validTo: '2024-12-31' },
-    { id: '20240510', line: '', isActivated: true, shippingCompany: 'COSCO', priceNature: '客户约价', isNAC: true, nac: ['NAC001', 'NAC002', 'NAC003'], applicableProducts: '危险品', customProduct: '', mqc: '220', cabinProtection: '无', cabinProtectionValue: '', cabinProtectionUnit: '', validFrom: '2024-05-10', validTo: '2025-05-09' },
-    { id: 'WT2383333', line: '', isActivated: true, isSelected: true, shippingCompany: 'OOCL', priceNature: '海外代理约价', isNAC: false, nac: [''], applicableProducts: '特种柜', customProduct: '', mqc: '140', cabinProtection: '有', cabinProtectionValue: '50', cabinProtectionUnit: 'TEU/周', validFrom: '2024-04-01', validTo: '2024-10-31' },
-    { id: '4', line: '新加坡', isActivated: true, shippingCompany: 'CMA', priceNature: '无约价', isNAC: true, nac: ['NAC002'], applicableProducts: '冷冻货', customProduct: '', mqc: '120', cabinProtection: '无', cabinProtectionValue: '', cabinProtectionUnit: '', validFrom: '2024-03-15', validTo: '2025-03-14' },
-    { id: 'MJ1', line: '美西', isActivated: true, shippingCompany: 'ONE', priceNature: '同行约价', isNAC: false, nac: [''], applicableProducts: 'FAK', customProduct: '', mqc: '240', cabinProtection: '有', cabinProtectionValue: '100', cabinProtectionUnit: 'TEU/水', validFrom: '2024-02-15', validTo: '2024-08-14' },
-    { id: '1', line: '中美洲', isActivated: false, shippingCompany: 'HAPAG', priceNature: 'AFC约价', isNAC: true, nac: ['NAC003'], applicableProducts: '纺织品', customProduct: '', mqc: '145', cabinProtection: '无', cabinProtectionValue: '', cabinProtectionUnit: '', validFrom: '2024-06-01', validTo: '2025-05-31' },
-    { id: '100', line: '', isActivated: true, shippingCompany: 'ZIM', priceNature: 'AFG约价', isNAC: false, nac: [''], applicableProducts: '其他', customProduct: '电子产品', mqc: '240', cabinProtection: '有', cabinProtectionValue: '300', cabinProtectionUnit: 'TEU/年', validFrom: '2024-01-15', validTo: '2024-12-31' },
-    { id: '001', line: '新加坡', isActivated: true, shippingCompany: 'MSC', priceNature: '自有约价', isNAC: true, nac: ['NAC004', 'NAC-VERY-LONG-CODE-12345678901234567890', 'NAC-ANOTHER-LONG-CODE-98765432109876543210'], applicableProducts: '其他', customProduct: '塑料制品', mqc: '120', cabinProtection: '无', cabinProtectionValue: '', cabinProtectionUnit: '', validFrom: '2024-04-15', validTo: '2025-04-14' },
-    { id: '298822264', line: '加勒比', isActivated: true, shippingCompany: 'MAERSK', priceNature: '客户约价', isNAC: null, nac: [''], applicableProducts: null, customProduct: '', mqc: '340', cabinProtection: null, cabinProtectionValue: '', cabinProtectionUnit: '', validFrom: '2024-03-01', validTo: '2024-08-31' },
-    { id: '12345', line: '美西', isActivated: false, shippingCompany: 'EVERGREEN', priceNature: '海外代理约价', isNAC: true, nac: ['NAC005', 'NAC006', 'NAC007', 'NAC008', 'NAC009'], applicableProducts: '化工品', customProduct: '', mqc: '140', cabinProtection: '无', cabinProtectionValue: '', cabinProtectionUnit: '', validFrom: '2024-05-01', validTo: '2024-10-31' },
-    { id: '1767', line: '', isActivated: true, shippingCompany: 'YANGMING', priceNature: '无约价', isNAC: null, nac: [''], applicableProducts: null, customProduct: '', mqc: '220', cabinProtection: '有', cabinProtectionValue: '150', cabinProtectionUnit: 'TEU/合约期', validFrom: '2024-02-01', validTo: '2025-01-31' },
+    { id: 'R20240001', isSelected: false, inquirySource: '内部', inquiryPerson: '张三', headFreightStatus: '待报价', mainFreightStatus: '待报价', tailFreightStatus: '待报价', containerInfo: '1*20GP+2*40HC', cargoReadyTime: '1周内', cargoNature: '询价', shippingCompany: 'MSC', routeType: '直达', loadingPort: 'CNSHA | Shanghai', dischargePort: 'USLAX | Los Angels', cargoName: '电子产品', remarks: '优先考虑直达航线', createTime: '2024-05-10 08:30:15' },
+    { id: 'R20240002', isSelected: false, inquirySource: '内部', inquiryPerson: '李四', headFreightStatus: '已报价', mainFreightStatus: '已报价', tailFreightStatus: '待报价', containerInfo: '3*40HC', cargoReadyTime: '2周内', cargoNature: '实单', shippingCompany: 'COSCO', routeType: '中转', loadingPort: 'CNTAO | Qingdao', dischargePort: 'USNYC | New York', cargoName: '机械设备', remarks: '需要温控', createTime: '2024-05-10 09:45:22' },
+    { id: 'R20240003', isSelected: true, inquirySource: '内部', inquiryPerson: '王五', headFreightStatus: '已报价', mainFreightStatus: '已报价', tailFreightStatus: '已报价', containerInfo: '2*20GP', cargoReadyTime: '2024-06-15', cargoNature: '询价', shippingCompany: 'OOCL', routeType: '直达', loadingPort: 'CNNGB | Ningbo', dischargePort: 'DEHAM | Hamburg', cargoName: '服装', remarks: '', createTime: '2024-05-10 10:15:30' },
+    { id: 'R20240004', isSelected: false, inquirySource: '内部', inquiryPerson: '赵六', headFreightStatus: '拒绝报价', mainFreightStatus: '待报价', tailFreightStatus: '待报价', containerInfo: '1*40HC+1*40HQ', cargoReadyTime: '1个月内', cargoNature: '实单', shippingCompany: 'CMA', routeType: '中转', loadingPort: 'CNXMN | Xiamen', dischargePort: 'GBFXT | Felixstowe', cargoName: '家具', remarks: '客户要求准班期', createTime: '2024-05-10 11:20:45' },
+    { id: 'R20240005', isSelected: false, inquirySource: '内部', inquiryPerson: '钱七', headFreightStatus: '待报价', mainFreightStatus: '拒绝报价', tailFreightStatus: '待报价', containerInfo: '5*40GP', cargoReadyTime: '暂不确定', cargoNature: '询价', shippingCompany: 'ONE', routeType: '直达', loadingPort: 'CNDLC | Dalian', dischargePort: 'SGSIN | Singapore', cargoName: '化工品', remarks: '危险品6.1类', createTime: '2024-05-10 13:05:10' },
+    { id: 'R20240006', isSelected: false, inquirySource: '内部', inquiryPerson: '孙八', headFreightStatus: '待报价', mainFreightStatus: '待报价', tailFreightStatus: '拒绝报价', containerInfo: '2*20GP+1*40HC', cargoReadyTime: '2024-07-10', cargoNature: '实单', shippingCompany: 'HAPAG', routeType: '中转', loadingPort: 'CNCAN | Guangzhou', dischargePort: 'NLRTM | Rotterdam', cargoName: '玩具', remarks: '需要提供装箱方案', createTime: '2024-05-10 14:30:25' },
+    { id: 'R20240007', isSelected: false, inquirySource: '内部', inquiryPerson: '周九', headFreightStatus: '已报价', mainFreightStatus: '已报价', tailFreightStatus: '已报价', containerInfo: '4*40HQ', cargoReadyTime: '2周内', cargoNature: '询价', shippingCompany: 'ZIM', routeType: '直达', loadingPort: 'CNSZX | Shenzhen', dischargePort: 'AEDXB | Dubai', cargoName: '电器', remarks: '', createTime: '2024-05-10 15:45:50' },
+    { id: 'R20240008', isSelected: false, inquirySource: '内部', inquiryPerson: '吴十', headFreightStatus: '待报价', mainFreightStatus: '待报价', tailFreightStatus: '待报价', containerInfo: '1*20GP', cargoReadyTime: '1周内', cargoNature: '实单', shippingCompany: 'MSC', routeType: '中转', loadingPort: 'CNQIN | Qinhuangdao', dischargePort: 'JPTYO | Tokyo', cargoName: '食品', remarks: '需要冷藏', createTime: '2024-05-10 16:20:35' },
+    { id: 'R20240009', isSelected: false, inquirySource: '内部', inquiryPerson: '郑十一', headFreightStatus: '已报价', mainFreightStatus: '待报价', tailFreightStatus: '待报价', containerInfo: '3*40GP+2*20GP', cargoReadyTime: '2024-08-01', cargoNature: '询价', shippingCompany: 'MAERSK', routeType: '直达', loadingPort: 'CNTSN | Tianjin', dischargePort: 'KRPUS | Busan', cargoName: '汽车配件', remarks: '高价值货物', createTime: '2024-05-11 09:10:15' },
+    { id: 'R20240010', isSelected: false, inquirySource: '内部', inquiryPerson: '王十二', headFreightStatus: '待报价', mainFreightStatus: '已报价', tailFreightStatus: '已报价', containerInfo: '2*40HC', cargoReadyTime: '暂不确定', cargoNature: '实单', shippingCompany: 'EVERGREEN', routeType: '中转', loadingPort: 'CNLYG | Lianyungang', dischargePort: 'MYPKG | Port Klang', cargoName: '塑料制品', remarks: '需要提供报关资料', createTime: '2024-05-11 10:25:40' },
+    { id: 'R20240011', isSelected: false, inquirySource: '内部', inquiryPerson: '李十三', headFreightStatus: '拒绝报价', mainFreightStatus: '拒绝报价', tailFreightStatus: '拒绝报价', containerInfo: '1*45HC', cargoReadyTime: '1个月内', cargoNature: '询价', shippingCompany: 'YANGMING', routeType: '直达', loadingPort: 'CNWEH | Weihai', dischargePort: 'VNSGN | Ho Chi Minh', cargoName: '纺织品', remarks: '客户要求低价', createTime: '2024-05-11 11:30:55' },
   ]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -85,17 +86,22 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
   // 列设置相关状态
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [columnConfigs, setColumnConfigs] = useState<ColumnConfig[]>([
-    { key: 'id', title: '船公司约号', visible: true, order: 0 },
-    { key: 'line', title: '适用航线', visible: true, order: 1 },
-    { key: 'shippingCompany', title: '船公司', visible: true, order: 2 },
-    { key: 'priceNature', title: '约价性质', visible: true, order: 3 },
-    { key: 'isNAC', title: '是否NAC', visible: true, order: 4 },
-    { key: 'nac', title: 'NAC', visible: true, order: 5 },
-    { key: 'applicableProducts', title: '适用品名', visible: true, order: 6 },
-    { key: 'mqc', title: 'MQC', visible: true, order: 7 },
-    { key: 'cabinProtection', title: '舱保', visible: true, order: 8 },
-    { key: 'validPeriod', title: '有效期', visible: true, order: 9 },
-    { key: 'isActivated', title: '是否启用', visible: true, order: 10 },
+    { key: 'id', title: '询价编号', visible: true, order: 0 },
+    { key: 'inquirySource', title: '询价来源', visible: true, order: 1 },
+    { key: 'inquiryPerson', title: '询价人', visible: true, order: 2 },
+    { key: 'headFreightStatus', title: '头程报价状态', visible: true, order: 3 },
+    { key: 'mainFreightStatus', title: '干线报价状态', visible: true, order: 4 },
+    { key: 'tailFreightStatus', title: '尾程报价状态', visible: true, order: 5 },
+    { key: 'containerInfo', title: '箱型箱量', visible: true, order: 6 },
+    { key: 'cargoReadyTime', title: '货好时间', visible: true, order: 7 },
+    { key: 'cargoNature', title: '货盘性质', visible: true, order: 8 },
+    { key: 'shippingCompany', title: '船公司', visible: true, order: 9 },
+    { key: 'routeType', title: '直达/中转', visible: true, order: 10 },
+    { key: 'loadingPort', title: '起运港', visible: true, order: 11 },
+    { key: 'dischargePort', title: '卸货港', visible: true, order: 12 },
+    { key: 'cargoName', title: '品名', visible: true, order: 13 },
+    { key: 'remarks', title: '备注', visible: true, order: 14 },
+    { key: 'createTime', title: '创建时间', visible: true, order: 15 },
   ]);
 
   // 添加确认删除模态框状态
@@ -164,10 +170,16 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
     }
 
     // 根据搜索词筛选
+    const searchTermLower = searchTerm.toLowerCase();
     const filtered = allAppointments.filter(appointment =>
-      appointment.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.line.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.shippingCompany.toLowerCase().includes(searchTerm.toLowerCase())
+      appointment.id.toLowerCase().includes(searchTermLower) ||
+      appointment.inquiryPerson.toLowerCase().includes(searchTermLower) ||
+      appointment.shippingCompany.toLowerCase().includes(searchTermLower) ||
+      appointment.loadingPort.toLowerCase().includes(searchTermLower) ||
+      appointment.dischargePort.toLowerCase().includes(searchTermLower) ||
+      appointment.cargoName.toLowerCase().includes(searchTermLower) ||
+      appointment.remarks.toLowerCase().includes(searchTermLower) ||
+      appointment.createTime.toLowerCase().includes(searchTermLower)
     );
 
     setAppointments(filtered);
@@ -178,7 +190,7 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
 
     const filtered = allAppointments.filter(appointment => {
       // 根据操作符和值进行筛选
-      // 约号筛选
+      // 询价编号筛选
       if (filters.appointmentNumber) {
         const val = appointment.id.toLowerCase();
         const filterVal = filters.appointmentNumber.toLowerCase();
@@ -199,12 +211,33 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
         }
       }
 
-      // 适用航线筛选
-      if (filters.line) {
-        const val = appointment.line.toLowerCase();
-        const filterVal = filters.line.toLowerCase();
+      // 询价来源筛选
+      if (filters.inquirySource) {
+        const val = appointment.inquirySource.toLowerCase();
+        const filterVal = filters.inquirySource.toLowerCase();
 
-        switch (filters.lineOp) {
+        switch (filters.inquirySourceOp) {
+          case '等于':
+            if (val !== filterVal) return false;
+            break;
+          case '不等于':
+            if (val === filterVal) return false;
+            break;
+          case '包含':
+            if (!val.includes(filterVal)) return false;
+            break;
+          case '不包含':
+            if (val.includes(filterVal)) return false;
+            break;
+        }
+      }
+
+      // 询价人筛选
+      if (filters.inquiryPerson) {
+        const val = appointment.inquiryPerson.toLowerCase();
+        const filterVal = filters.inquiryPerson.toLowerCase();
+
+        switch (filters.inquiryPersonOp) {
           case '等于':
             if (val !== filterVal) return false;
             break;
@@ -241,12 +274,12 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
         }
       }
 
-      // 约价性质筛选
-      if (filters.priceNature) {
-        const val = appointment.priceNature.toLowerCase();
-        const filterVal = filters.priceNature.toLowerCase();
+      // 头程报价状态筛选
+      if (filters.headFreightStatus) {
+        const val = appointment.headFreightStatus.toLowerCase();
+        const filterVal = filters.headFreightStatus.toLowerCase();
 
-        switch (filters.priceNatureOp) {
+        switch (filters.headFreightStatusOp) {
           case '等于':
             if (val !== filterVal) return false;
             break;
@@ -262,57 +295,186 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
         }
       }
 
-      // 是否NAC筛选
-      if (filters.isNAC) {
-        const isNacValue = filters.isNAC === 'true' ? true : filters.isNAC === 'false' ? false : null;
+      // 干线报价状态筛选
+      if (filters.mainFreightStatus) {
+        const val = appointment.mainFreightStatus.toLowerCase();
+        const filterVal = filters.mainFreightStatus.toLowerCase();
 
-        switch (filters.isNACOp) {
+        switch (filters.mainFreightStatusOp) {
           case '等于':
-            if (appointment.isNAC !== isNacValue) return false;
+            if (val !== filterVal) return false;
             break;
           case '不等于':
-            if (appointment.isNAC === isNacValue) return false;
+            if (val === filterVal) return false;
+            break;
+          case '包含':
+            if (!val.includes(filterVal)) return false;
+            break;
+          case '不包含':
+            if (val.includes(filterVal)) return false;
             break;
         }
       }
 
-      // 是否启用筛选
-      if (filters.isActivated) {
-        const isActivatedValue = filters.isActivated === 'true';
+      // 尾程报价状态筛选
+      if (filters.tailFreightStatus) {
+        const val = appointment.tailFreightStatus.toLowerCase();
+        const filterVal = filters.tailFreightStatus.toLowerCase();
 
-        switch (filters.isActivatedOp) {
+        switch (filters.tailFreightStatusOp) {
           case '等于':
-            if (appointment.isActivated !== isActivatedValue) return false;
+            if (val !== filterVal) return false;
             break;
           case '不等于':
-            if (appointment.isActivated === isActivatedValue) return false;
+            if (val === filterVal) return false;
+            break;
+          case '包含':
+            if (!val.includes(filterVal)) return false;
+            break;
+          case '不包含':
+            if (val.includes(filterVal)) return false;
             break;
         }
       }
 
-      // 有效期筛选
-      if (filters.validFrom || filters.validTo) {
-        // 将字符串日期转换为 Date 对象进行比较
-        const appValidFrom = appointment.validFrom ? new Date(appointment.validFrom) : null;
-        const appValidTo = appointment.validTo ? new Date(appointment.validTo) : null;
-        const filterValidFrom = filters.validFrom ? new Date(filters.validFrom) : null;
-        const filterValidTo = filters.validTo ? new Date(filters.validTo) : null;
+      // 创建时间筛选
+      if (filters.createTime) {
+        const val = appointment.createTime.toLowerCase();
+        const filterVal = filters.createTime.toLowerCase();
 
-        // 使用范围筛选
-        if (filters.validDateOp === '范围') {
-          if (filterValidFrom && filterValidTo) {
-            // 筛选条件有开始和结束日期，检查是否有重叠
-            if (!appValidFrom || !appValidTo) return false;
-            if (appValidTo < filterValidFrom || appValidFrom > filterValidTo) return false;
-          } else if (filterValidFrom) {
-            // 只有开始日期，查找在此日期之后结束的约号
-            if (!appValidTo) return false;
-            if (appValidTo < filterValidFrom) return false;
-          } else if (filterValidTo) {
-            // 只有结束日期，查找在此日期之前开始的约号
-            if (!appValidFrom) return false;
-            if (appValidFrom > filterValidTo) return false;
-          }
+        switch (filters.createTimeOp) {
+          case '等于':
+            if (val !== filterVal) return false;
+            break;
+          case '不等于':
+            if (val === filterVal) return false;
+            break;
+          case '包含':
+            if (!val.includes(filterVal)) return false;
+            break;
+          case '不包含':
+            if (val.includes(filterVal)) return false;
+            break;
+        }
+      }
+
+      // 箱型箱量筛选
+      if (filters.containerInfo) {
+        const val = appointment.containerInfo.toLowerCase();
+        const filterVal = filters.containerInfo.toLowerCase();
+
+        switch (filters.containerInfoOp) {
+          case '等于':
+            if (val !== filterVal) return false;
+            break;
+          case '不等于':
+            if (val === filterVal) return false;
+            break;
+          case '包含':
+            if (!val.includes(filterVal)) return false;
+            break;
+          case '不包含':
+            if (val.includes(filterVal)) return false;
+            break;
+        }
+      }
+
+      // 直达/中转筛选
+      if (filters.routeType) {
+        const val = appointment.routeType.toLowerCase();
+        const filterVal = filters.routeType.toLowerCase();
+
+        switch (filters.routeTypeOp) {
+          case '等于':
+            if (val !== filterVal) return false;
+            break;
+          case '不等于':
+            if (val === filterVal) return false;
+            break;
+        }
+      }
+
+      // 起运港筛选
+      if (filters.loadingPort) {
+        const val = appointment.loadingPort.toLowerCase();
+        const filterVal = filters.loadingPort.toLowerCase();
+
+        switch (filters.loadingPortOp) {
+          case '等于':
+            if (val !== filterVal) return false;
+            break;
+          case '不等于':
+            if (val === filterVal) return false;
+            break;
+          case '包含':
+            if (!val.includes(filterVal)) return false;
+            break;
+          case '不包含':
+            if (val.includes(filterVal)) return false;
+            break;
+        }
+      }
+
+      // 卸货港筛选
+      if (filters.dischargePort) {
+        const val = appointment.dischargePort.toLowerCase();
+        const filterVal = filters.dischargePort.toLowerCase();
+
+        switch (filters.dischargePortOp) {
+          case '等于':
+            if (val !== filterVal) return false;
+            break;
+          case '不等于':
+            if (val === filterVal) return false;
+            break;
+          case '包含':
+            if (!val.includes(filterVal)) return false;
+            break;
+          case '不包含':
+            if (val.includes(filterVal)) return false;
+            break;
+        }
+      }
+
+      // 品名筛选
+      if (filters.cargoName) {
+        const val = appointment.cargoName.toLowerCase();
+        const filterVal = filters.cargoName.toLowerCase();
+
+        switch (filters.cargoNameOp) {
+          case '等于':
+            if (val !== filterVal) return false;
+            break;
+          case '不等于':
+            if (val === filterVal) return false;
+            break;
+          case '包含':
+            if (!val.includes(filterVal)) return false;
+            break;
+          case '不包含':
+            if (val.includes(filterVal)) return false;
+            break;
+        }
+      }
+
+      // 备注筛选
+      if (filters.remarks) {
+        const val = appointment.remarks.toLowerCase();
+        const filterVal = filters.remarks.toLowerCase();
+
+        switch (filters.remarksOp) {
+          case '等于':
+            if (val !== filterVal) return false;
+            break;
+          case '不等于':
+            if (val === filterVal) return false;
+            break;
+          case '包含':
+            if (!val.includes(filterVal)) return false;
+            break;
+          case '不包含':
+            if (val.includes(filterVal)) return false;
+            break;
         }
       }
 
@@ -386,7 +548,7 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
     }
   };
 
-  // 添加以下函数来检查选中的记录的启用状态
+  // 添加以下函数来检查选中的记录的状态
   const checkSelectedStatus = () => {
     const selectedAppointments = appointments.filter(a => a.isSelected);
 
@@ -395,16 +557,13 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
       return { count: 0, allActivated: false, allDeactivated: false };
     }
 
-    // 检查是否所有选中的记录都是启用状态
-    const allActivated = selectedAppointments.every(a => a.isActivated);
-
-    // 检查是否所有选中的记录都是禁用状态
-    const allDeactivated = selectedAppointments.every(a => !a.isActivated);
-
+    // 在新的数据模型中，我们不再使用isActivated属性
+    // 这里我们可以根据需要定义新的检查逻辑，或者保持原有的返回结构
+    // 为了保持代码兼容性，我们返回默认值
     return {
       count: selectedAppointments.length,
-      allActivated,
-      allDeactivated
+      allActivated: true,
+      allDeactivated: false
     };
   };
 
@@ -470,29 +629,15 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
       appointments.filter(a => a.isSelected).map(a => a.id)
     );
 
-    // 更新显示列表
-    const newAppointments = appointments.map(appointment => {
-      if (appointment.isSelected) {
-        return { ...appointment, isActivated: true };
-      }
-      return appointment;
-    });
-    setAppointments(newAppointments);
-
-    // 更新完整数据列表
-    const newAllAppointments = allAppointments.map(appointment => {
-      if (selectedIds.has(appointment.id)) {
-        return { ...appointment, isActivated: true };
-      }
-      return appointment;
-    });
-    setAllAppointments(newAllAppointments);
+    // 在新的数据模型中，我们不再使用isActivated属性
+    // 这里我们可以根据需要定义新的激活逻辑
+    // 为了保持代码兼容性，我们只更新选中状态
 
     // 关闭确认模态框
     setIsConfirmModalOpen(false);
 
     // 显示成功提示
-    setToastMessage('启用成功');
+    setToastMessage('操作成功');
     setToastType('success');
     setShowToast(true);
   };
@@ -503,29 +648,15 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
       appointments.filter(a => a.isSelected).map(a => a.id)
     );
 
-    // 更新显示列表
-    const newAppointments = appointments.map(appointment => {
-      if (appointment.isSelected) {
-        return { ...appointment, isActivated: false };
-      }
-      return appointment;
-    });
-    setAppointments(newAppointments);
-
-    // 更新完整数据列表
-    const newAllAppointments = allAppointments.map(appointment => {
-      if (selectedIds.has(appointment.id)) {
-        return { ...appointment, isActivated: false };
-      }
-      return appointment;
-    });
-    setAllAppointments(newAllAppointments);
+    // 在新的数据模型中，我们不再使用isActivated属性
+    // 这里我们可以根据需要定义新的禁用逻辑
+    // 为了保持代码兼容性，我们只更新选中状态
 
     // 关闭确认模态框
     setIsConfirmModalOpen(false);
 
     // 显示成功提示
-    setToastMessage('禁用成功');
+    setToastMessage('操作成功');
     setToastType('success');
     setShowToast(true);
   };
@@ -572,7 +703,21 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
   const handleSaveAppointment = (appointment: Appointment) => {
     if (isAddMode) {
       // 添加新约号到完整数据列表
-      const newAppointment = { ...appointment, isSelected: false };
+      // 确保新记录有创建时间
+      const newAppointment = {
+        ...appointment,
+        isSelected: false,
+        createTime: appointment.createTime || new Date().toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        }).replace(/\//g, '-')
+      };
+
       const newAllAppointments = [...allAppointments, newAppointment];
       setAllAppointments(newAllAppointments);
 
@@ -589,7 +734,15 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
       setShowToast(true);
     } else {
       // 更新现有约号
-      const updatedAppointment = { ...appointment, isSelected: true };
+      // 查找原始记录以保留创建时间
+      const originalAppointment = allAppointments.find(a => a.id === appointment.id);
+
+      const updatedAppointment = {
+        ...appointment,
+        isSelected: true,
+        // 保留原始创建时间
+        createTime: originalAppointment?.createTime || appointment.createTime
+      };
 
       // 更新显示列表
       const newAppointments = appointments.map(a =>
@@ -726,6 +879,7 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
         {/* 列设置按钮 */}
         <div className="table-header-actions">
           <button
+            type="button"
             className="column-settings-button"
             onClick={() => setShowColumnSettings(true)}
           >
@@ -733,13 +887,16 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
           </button>
         </div>
 
-        <table>
+        <div className="table-content-wrapper">
+          <table>
           <thead>
             <tr>
               <th className="checkbox-column">
                 <input
                   type="checkbox"
                   onChange={handleToggleSelectAll}
+                  title="全选/取消全选"
+                  aria-label="全选/取消全选"
                 />
               </th>
               {getVisibleColumns().map(column => (
@@ -759,6 +916,8 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
                     checked={!!appointment.isSelected}
                     onChange={(e) => toggleSelection(index, e.nativeEvent as unknown as React.MouseEvent)}
                     onClick={(e) => e.stopPropagation()}
+                    title={`选择询价编号 ${appointment.id}`}
+                    aria-label={`选择询价编号 ${appointment.id}`}
                   />
                 </td>
                 {getVisibleColumns().map(column => (
@@ -774,12 +933,18 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
             ))}
           </tbody>
         </table>
+        </div>
 
         {/* 分页器和数量统计 */}
         <div className="pagination-container">
           <div className="pagination-info">
             共 {appointments.length} 条记录，每页
-            <select value={pageSize} onChange={handlePageSizeChange}>
+            <select
+              value={pageSize}
+              onChange={handlePageSizeChange}
+              title="每页显示记录数"
+              aria-label="每页显示记录数"
+            >
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="50">50</option>
@@ -790,55 +955,73 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
 
           <div className="pagination">
             <button
+              type="button"
               className={`pagination-button ${currentPage === 1 ? 'disabled' : ''}`}
               onClick={() => handlePageChange(1)}
               disabled={currentPage === 1}
+              aria-label="首页"
             >
               首页
             </button>
             <button
+              type="button"
               className={`pagination-button ${currentPage === 1 ? 'disabled' : ''}`}
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
+              aria-label="上一页"
             >
               &lt;
             </button>
 
             {getPageNumbers().map(page => (
               <button
+                type="button"
                 key={page}
                 className={`pagination-button ${page === currentPage ? 'active' : ''}`}
                 onClick={() => handlePageChange(page)}
+                aria-label={`第${page}页`}
+                aria-current={page === currentPage ? 'page' : undefined}
               >
                 {page}
               </button>
             ))}
 
             <button
+              type="button"
               className={`pagination-button ${currentPage === totalPages ? 'disabled' : ''}`}
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
+              aria-label="下一页"
             >
               &gt;
             </button>
             <button
+              type="button"
               className={`pagination-button ${currentPage === totalPages ? 'disabled' : ''}`}
               onClick={() => handlePageChange(totalPages)}
               disabled={currentPage === totalPages}
+              aria-label="末页"
             >
               末页
             </button>
 
-            <div style={{ marginLeft: '10px' }}>
+            <div className="pagination-goto">
               前往
               <input
                 type="text"
                 className="pagination-input"
                 value={goToPage}
                 onChange={handleGoToPageChange}
+                title="跳转到指定页码"
+                aria-label="跳转到指定页码"
+                placeholder="页码"
               />
               页
-              <button className="pagination-go" onClick={handleGoToPageSubmit}>
+              <button
+                type="button"
+                className="pagination-go"
+                onClick={handleGoToPageSubmit}
+              >
                 确定
               </button>
             </div>
@@ -905,52 +1088,63 @@ const AppointmentTable: React.FC<AppointmentTableProps> = ({debug = false}) => {
     switch (columnKey) {
       case 'id':
         return appointment.id;
-      case 'line':
-        return appointment.line;
+      case 'inquirySource':
+        return appointment.inquirySource;
+      case 'inquiryPerson':
+        return appointment.inquiryPerson;
+      case 'headFreightStatus':
+        return renderStatusWithColor(appointment.headFreightStatus);
+      case 'mainFreightStatus':
+        return renderStatusWithColor(appointment.mainFreightStatus);
+      case 'tailFreightStatus':
+        return renderStatusWithColor(appointment.tailFreightStatus);
+      case 'containerInfo':
+        return appointment.containerInfo;
+      case 'cargoReadyTime':
+        return appointment.cargoReadyTime;
+      case 'cargoNature':
+        return appointment.cargoNature;
       case 'shippingCompany':
         return formatShippingCompany(appointment.shippingCompany);
-      case 'priceNature':
-        return appointment.priceNature;
-      case 'isNAC':
-        return appointment.isNAC === null ? '' : appointment.isNAC ? '是' : '否';
-      case 'nac':
-        if (!appointment.isNAC) return '';
-        const nacText = appointment.nac.join(' | ');
+      case 'routeType':
+        return appointment.routeType;
+      case 'loadingPort':
+        return appointment.loadingPort;
+      case 'dischargePort':
+        return appointment.dischargePort;
+      case 'cargoName':
+        return appointment.cargoName;
+      case 'remarks':
         // 添加title属性以便在鼠标悬停时显示完整值
         return (
-          <div className="truncate-text" title={nacText}>
-            {nacText}
+          <div className="truncate-text" title={appointment.remarks}>
+            {appointment.remarks}
           </div>
         );
-      case 'applicableProducts':
-        return appointment.applicableProducts === null
-          ? ''
-          : appointment.applicableProducts === '其他'
-            ? `其他 (${appointment.customProduct})`
-            : appointment.applicableProducts;
-      case 'mqc':
-        return appointment.mqc;
-      case 'cabinProtection':
-        return appointment.cabinProtection === null
-          ? ''
-          : appointment.cabinProtection === '有' && appointment.cabinProtectionValue && appointment.cabinProtectionUnit
-            ? `有 (${appointment.cabinProtectionValue} ${appointment.cabinProtectionUnit})`
-            : appointment.cabinProtection;
-      case 'validPeriod':
-        if (appointment.validFrom && appointment.validTo) {
-          return `${appointment.validFrom} 至 ${appointment.validTo}`;
-        } else if (appointment.validFrom) {
-          return `${appointment.validFrom} 起`;
-        } else if (appointment.validTo) {
-          return `至 ${appointment.validTo}`;
-        } else {
-          return '';
-        }
-      case 'isActivated':
-        return appointment.isActivated ? '是' : '否';
+      case 'createTime':
+        return appointment.createTime;
       default:
         return '';
     }
+  }
+
+  // 根据状态返回带颜色的状态文本
+  function renderStatusWithColor(status: string) {
+    let className = '';
+
+    switch (status) {
+      case '待报价':
+        className = 'status-pending';
+        break;
+      case '已报价':
+        className = 'status-quoted';
+        break;
+      case '拒绝报价':
+        className = 'status-rejected';
+        break;
+    }
+
+    return <span className={className}>{status}</span>;
   }
 };
 

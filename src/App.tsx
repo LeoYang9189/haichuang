@@ -1,36 +1,46 @@
 import React, { useState } from 'react';
 import './App.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faList } from '@fortawesome/free-solid-svg-icons';
 import AppointmentTable from './components/AppointmentTable';
+import Sidebar from './components/Sidebar';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('船公司约号管理');
+  const [activeTab, setActiveTab] = useState('询价管理');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState('询价管理');
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
+  const handleMenuSelect = (menuName: string) => {
+    setSelectedMenu(menuName);
+    setActiveTab(menuName);
+  };
 
   return (
     <div className="App">
-      <header className="header">
-        <button className="menu-button">
-          <FontAwesomeIcon icon={faList} />
-        </button>
-        <div className="header-title">
-          行业陪检部化工品，锂电池，安定 - 04/23 【运价信息】4月23
-        </div>
-      </header>
-      
-      <div className="content">
-        <div className="tabs">
-          <div className="tab">
-            <span className="tab-text">首页</span>
+      <div className="app-container">
+        <Sidebar
+          isCollapsed={sidebarCollapsed}
+          onToggle={toggleSidebar}
+          onMenuSelect={handleMenuSelect}
+          selectedMenu={selectedMenu}
+        />
+
+        <div className="content">
+          <div className="tabs">
+            <div className="tab">
+              <span className="tab-text">首页</span>
+            </div>
+            <div className={`tab ${activeTab ? 'active' : ''}`}>
+              <span className="tab-text">{activeTab}</span>
+              <button className="close-tab" type="button">×</button>
+            </div>
           </div>
-          <div className={`tab ${activeTab === '船公司约号管理' ? 'active' : ''}`}>
-            <span className="tab-text">船公司约号管理</span>
-            <button className="close-tab">×</button>
+
+          <div className="main-content">
+            <AppointmentTable />
           </div>
-        </div>
-        
-        <div className="main-content">
-          <AppointmentTable />
         </div>
       </div>
     </div>
